@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Case API Configuration Analysis Report</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px; margin-top: 30px; }
+        h3 { color: #555; margin-top: 25px; }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin: 15px 0; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #3498db; 
+            color: white; 
+            font-weight: bold;
+        }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        code { 
+            background-color: #f4f4f4; 
+            padding: 2px 6px; 
+            border-radius: 3px; 
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre { 
+            background-color: #2c3e50; 
+            color: #ecf0f1; 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border-left: 4px solid #3498db;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .toc ul { list-style-type: none; }
+        .toc li { margin: 5px 0; }
+        .highlight { background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 10px 0; }
+        .warning { background-color: #f8d7da; padding: 10px; border-left: 4px solid #dc3545; margin: 10px 0; }
+        .info { background-color: #d1ecf1; padding: 10px; border-left: 4px solid #17a2b8; margin: 10px 0; }
+        .success { background-color: #d4edda; padding: 10px; border-left: 4px solid #28a745; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<h1>Case API Configuration Analysis Report</h1>
+
+<div class="info">
+<strong>Report Date:</strong> October 3, 2025<br>
+<strong>Configuration Path:</strong> <code>/domains/case_management/apps/case-api/config/</code><br>
+<strong>Chart Version:</strong> 0.0.6<br>
+<strong>Team:</strong> case-management
+</div>
+
+<div class="toc">
+<h2>Table of Contents</h2>
+<ul>
+    <li><a href="#executive-summary">1. Executive Summary</a></li>
+    <li><a href="#folder-structure">2. Folder Structure and Contents</a></li>
+    <li><a href="#configuration-architecture">3. Configuration Architecture</a></li>
+    <li><a href="#datacenter-deployment">4. Datacenter-Specific Deployment</a></li>
+    <li><a href="#conditional-environment-variables">5. Conditional Environment Variables</a></li>
+    <li><a href="#infrastructure-components">6. Infrastructure Components</a></li>
+    <li><a href="#configuration-generation">7. Configuration Generation Process</a></li>
+    <li><a href="#service-discovery">8. Service Discovery and Networking</a></li>
+    <li><a href="#deployment-automation">9. Deployment Automation</a></li>
+    <li><a href="#security-compliance">10. Security and Compliance</a></li>
+    <li><a href="#development-testing">11. Development and Testing</a></li>
+    <li><a href="#key-patterns">12. Key Configuration Patterns</a></li>
+    <li><a href="#monitoring">13. Monitoring and Observability</a></li>
+    <li><a href="#troubleshooting">14. Troubleshooting Guide</a></li>
+    <li><a href="#recommendations">15. Recommendations</a></li>
+</ul>
+</div>
+
+<h2 id="executive-summary">Executive Summary</h2>
+
+<p>The Case API configuration folder implements a sophisticated multi-datacenter deployment system using Helm charts, Kubernetes templates, and Consul Template for dynamic configuration generation. The system supports deployment across 8+ global datacenters with environment-specific configurations for compliance, performance, and data locality.</p>
+
+<div class="highlight">
+<strong>Key Features:</strong>
+<ul>
+    <li><strong>Multi-Datacenter Support:</strong> 8 global datacenters (US, EU, APAC, Government)</li>
+    <li><strong>FIPS Compliance:</strong> Dedicated government deployment with FIPS-compliant containers</li>
+    <li><strong>Dynamic Configuration:</strong> Consul Template-based config generation</li>
+    <li><strong>Service Mesh Integration:</strong> Fabric service mesh for secure communication</li>
+    <li><strong>Automated Deployment:</strong> Conductor-driven CI/CD pipelines</li>
+</ul>
+</div>
+
+<h2 id="folder-structure">Folder Structure and Contents</h2>
+
+<p>The main configuration directory is located at <code>config/k8s/</code> within the case-api application:</p>
+
+<pre>
+config/k8s/
+├── BUILD.bazel                     # Bazel build configuration
+├── CHANGELOG.md                    # Configuration change history
+├── Chart.yaml                      # Helm chart metadata
+├── service.datadog.yaml            # Datadog service catalog definition
+├── values.yaml                     # Base Helm values
+├── tilt.star                       # Tilt development configuration
+├── ci/
+│   └── test-values.yaml            # CI/CD test values
+├── fabric/
+│   ├── BUILD.bazel                 # Fabric service mesh build config
+│   └── destination.yaml            # Fabric destination configuration
+├── templates/
+│   ├── _case-api.ini.tpl          # Application configuration template
+│   ├── configmap.yaml             # Kubernetes ConfigMap template
+│   ├── deployment.yaml            # Kubernetes Deployment template
+│   ├── fabric.yaml                # Fabric proxy configuration
+│   ├── migrations-job.yaml        # Database migrations job
+│   ├── service.yaml               # Kubernetes Service template
+│   └── serviceaccount.yaml        # Service account configuration
+└── values/
+    └── profiles/
+        └── devenv.yaml             # Development environment values
+</pre>
+
+<h2 id="configuration-architecture">Configuration Architecture</h2>
+
+<h3>Multi-Tier Configuration System</h3>
+
+<p>The configuration system operates on multiple hierarchical levels:</p>
+
+<ol>
+    <li><strong>Base Configuration</strong> (<code>values.yaml</code>): Common settings across all environments</li>
+    <li><strong>Datacenter-Specific Configuration</strong>: Located in <code>../config/k8s/values/datacenters/</code></li>
+    <li><strong>Tenant-Specific Configuration</strong>: Located in <code>../config/k8s/values/tenants/case-management/datacenters/</code></li>
+    <li><strong>Environment Profiles</strong>: Development, staging, and production overrides</li>
+</ol>
+
+<h3>Helm Chart Structure</h3>
+
+<table>
+<tr><th>Property</th><th>Value</th><th>Description</th></tr>
+<tr><td><strong>Name</strong></td><td>case-api</td><td>Helm chart identifier</td></tr>
+<tr><td><strong>Version</strong></td><td>0.0.6</td><td>Current chart version</td></tr>
+<tr><td><strong>Dependencies</strong></td><td>helpers (1.1.0)</td><td>Shared helper templates</td></tr>
+<tr><td><strong>Repository</strong></td><td>@datadog</td><td>Internal Datadog repository</td></tr>
+</table>
+
+<h2 id="datacenter-deployment">Datacenter-Specific Deployment</h2>
+
+<h3>Supported Datacenters</h3>
+
+<table>
+<tr><th>Datacenter</th><th>Environment</th><th>Datadog Site</th><th>Special Features</th></tr>
+<tr><td><strong>us1.prod</strong></td><td>Production</td><td>app.datadoghq.com</td><td>Primary US region</td></tr>
+<tr><td><strong>eu1.prod</strong></td><td>Production</td><td>app.datadoghq.eu</td><td>EU data residency</td></tr>
+<tr><td><strong>us3.prod</strong></td><td>Production</td><td>us3.datadoghq.com</td><td>Secondary US region</td></tr>
+<tr><td><strong>us5.prod</strong></td><td>Production</td><td>us5.datadoghq.com</td><td>Tertiary US region</td></tr>
+<tr><td><strong>ap1.prod</strong></td><td>Production</td><td>ap1.datadoghq.com</td><td>Asia Pacific 1</td></tr>
+<tr><td><strong>ap2.prod</strong></td><td>Production</td><td>ap2.datadoghq.com</td><td>Asia Pacific 2</td></tr>
+<tr><td><strong>us1.fed</strong></td><td>Federal</td><td>app.ddog-gov.com</td><td>FIPS compliance</td></tr>
+<tr><td><strong>us1.staging</strong></td><td>Staging</td><td>dd.datad0g.com</td><td>Testing environment</td></tr>
+</table>
+
+<h2 id="conditional-environment-variables">Conditional Environment Variables</h2>
+
+<div class="success">
+<strong>Key Pattern:</strong> The system conditionally sets environment variables based on deployment context through the <code>case-management.env_variables</code> template.
+</div>
+
+<h3>Template Definition</h3>
+
+<p>Located in <code>_labels.tpl</code> at lines 44-55:</p>
+
+<pre>
+{{- define "case-management.env_variables" -}}
+- name: GODEBUG
+  value: "netdns=cgo"
+- name: DD_DATACENTER
+  value: '{{ $.Values.global.datacenter.datacenter }}'
+- name: DD_SITE
+  value: '{{ $.Values.global.dd_site }}'
+- name: STATSD_URL
+  value: unix:///var/run/datadog-agent/statsd.sock
+- name: TENANT_NAME
+  value: '{{ $.Values.tenant_name }}'
+{{- end -}}
+</pre>
+
+<h3>Environment Variables Explained</h3>
+
+<table>
+<tr><th>Variable</th><th>Type</th><th>Purpose</th><th>Example Values</th></tr>
+<tr><td><code>GODEBUG</code></td><td>Static</td><td>Go runtime debugging</td><td>netdns=cgo</td></tr>
+<tr><td><code>DD_DATACENTER</code></td><td>Dynamic</td><td>Datacenter identifier</td><td>us1, eu1, ap1</td></tr>
+<tr><td><code>DD_SITE</code></td><td>Dynamic</td><td>Datadog site URL</td><td>app.datadoghq.com</td></tr>
+<tr><td><code>STATSD_URL</code></td><td>Static</td><td>StatsD socket path</td><td>unix:///var/run/datadog-agent/statsd.sock</td></tr>
+<tr><td><code>TENANT_NAME</code></td><td>Dynamic</td><td>Tenant identifier</td><td>case-management</td></tr>
+</table>
+
+<h3>Datacenter-Specific Configuration Examples</h3>
+
+<h4>US1 Production</h4>
+<pre>
+dd_site: "https://app.datadoghq.com"
+datacenter:
+  datacenter: "us1"
+  arm_enabled: false
+</pre>
+
+<h4>EU1 Production</h4>
+<pre>
+dd_site: "https://app.datadoghq.eu"
+datacenter:
+  datacenter: "eu1"
+  arm_enabled: false
+</pre>
+
+<h4>US1 Federal (Government)</h4>
+<pre>
+dd_site: "https://app.ddog-gov.com"
+dd_partition: "gov-us"
+datacenter:
+  datacenter: "us1"
+  arm_enabled: false
+</pre>
+
+<h2 id="infrastructure-components">Infrastructure Components</h2>
+
+<h3>1. Database Configuration</h3>
+
+<p>Each datacenter maintains isolated database clusters for data locality and compliance:</p>
+
+<h4>US1 Production</h4>
+<pre>
+db:
+  master:
+    host: case-management-rds.postgres.us1.prod.dog
+    port: 5433
+  replicas:
+    host: case-management-rds.postgres.us1.prod.dog
+    port: 5433
+</pre>
+
+<h4>EU1 Production</h4>
+<pre>
+db:
+  master:
+    host: case-management-db.postgres.eu1.prod.dog
+    port: 5432
+  replicas:
+    host: case-management-db-ro.postgres.eu1.prod.dog
+    port: 5432
+</pre>
+
+<h4>US1 Federal (with Fabric proxy)</h4>
+<pre>
+db:
+  master:
+    host: case-management-rds.postgres.us1.fed.fabric.dog
+    port: 5432
+  replicas:
+    host: case-management-rds-ro.postgres.us1.fed.fabric.dog
+    port: 5432
+</pre>
+
+<h3>2. Kafka Configuration</h3>
+
+<p>Datacenter-isolated Kafka clusters with unique identifiers for message streaming:</p>
+
+<table>
+<tr><th>Datacenter</th><th>Cluster ID</th><th>Bootstrap Servers</th></tr>
+<tr><td>us1.prod</td><td>kafka-case-management-56de</td><td>kafka-case-management-56de.us1.prod.dog:9092</td></tr>
+<tr><td>eu1.prod</td><td>kafka-case-management-ad55</td><td>kafka-case-management-ad55.eu1.prod.dog:9092</td></tr>
+<tr><td>us3.prod</td><td>kafka-case-management-61d9</td><td>kafka-case-management-61d9.us3.prod.dog:9092</td></tr>
+<tr><td>us5.prod</td><td>kafka-case-management-0e5e</td><td>kafka-case-management-0e5e.us5.prod.dog:9092</td></tr>
+<tr><td>ap1.prod</td><td>kafka-case-management-6609</td><td>kafka-case-management-6609.ap1.prod.dog:9092</td></tr>
+<tr><td>ap2.prod</td><td>kafka-case-management-ca9c</td><td>kafka-case-management-ca9c.ap2.prod.dog:9092</td></tr>
+<tr><td>us1.fed</td><td>kafka-case-management-c096</td><td>kafka-case-management-c096.us1.fed.dog:9092</td></tr>
+<tr><td>us1.staging</td><td>kafka-case-management-c676</td><td>kafka-case-management-c676.us1.staging.dog:9092</td></tr>
+</table>
+
+<h3>3. Container Image Selection</h3>
+
+<p>The deployment template conditionally selects container images based on compliance requirements:</p>
+
+<pre>
+{{- if eq $.Values.global.dd_partition "gov-us" }}
+image: "{{ .Values.global.oci.registry }}/{{ .Values.cnab.images.caseapifips.repository }}@{{ .Values.cnab.images.caseapifips.digest }}"
+{{- else }}
+image: "{{ .Values.global.oci.registry }}/{{ .Values.cnab.images.caseapi.repository }}@{{ .Values.cnab.images.caseapi.digest }}"
+{{- end }}
+</pre>
+
+<ul>
+    <li><strong>Standard environments</strong>: Uses <code>caseapi</code> image</li>
+    <li><strong>Government environments</strong>: Uses <code>caseapifips</code> image (FIPS-compliant)</li>
+</ul>
+
+<h2 id="configuration-generation">Configuration Generation Process</h2>
+
+<h3>Consul Template Integration</h3>
+
+<p>The system uses Consul Template for dynamic configuration generation through an init container:</p>
+
+<pre>
+initContainers:
+- name: consul-template-init
+  image: "{{ $.Values.global.docker.registry }}/{{ $.Values.global.consulTemplate.image.name }}:{{ $.Values.global.consulTemplate.image.tag }}"
+  volumeMounts:
+  - name: config
+    mountPath: /etc/datadog
+  - name: templates
+    mountPath: /etc/templates
+  args:
+  - -once
+  - -template=/etc/templates/case-api.ini:/etc/datadog/case-api.ini
+  env:
+  - name: DD_DATACENTER
+    value: '{{ $.Values.global.datacenter.datacenter }}'
+  - name: DD_SITE
+    value: '{{ $.Values.global.dd_site }}'
+</pre>
+
+<h3>Configuration Template</h3>
+
+<p>The <code>_case-api.ini.tpl</code> template includes multiple configuration sections:</p>
+
+<pre>
+{{ include "case-management.postgres" $ }}      # Database configuration
+{{ include "case-management.consul_config" $ }} # Consul service discovery
+{{ include "case-management.features_flag" $ }} # Feature flags
+{{ include "case-management.dd_clients" $ }}    # Datadog client configuration
+{{ include "case-management.elasticsearch" $ }} # Elasticsearch configuration
+</pre>
+
+<h2 id="service-discovery">Service Discovery and Networking</h2>
+
+<h3>Fabric Service Mesh Integration</h3>
+
+<p>The service integrates with Datadog's Fabric service mesh for secure communication:</p>
+
+<h4>Pod Annotations</h4>
+<pre>
+annotations:
+  beta.fabric.datadoghq.com/inject-lifecycle: "inject"
+  beta.fabric.datadoghq.com/egress-gateway: "true"
+  beta.fabric.datadoghq.com/proxy-configmap: "{{ $.Release.Name }}-fabric-proxy-config"
+</pre>
+
+<h4>Destination Configuration</h4>
+<pre>
+spec:
+  defaultConnectionConfig:
+    protocol: HTTP2
+    tls: {}
+  endpointGroups:
+    main:
+      selector:
+        kubernetesServiceSelector:
+          name: {{ $.Release.Name }}
+          namespace: {{ $.Release.Namespace }}
+          port: 6481
+</pre>
+
+<h3>Health Checks</h3>
+
+<p>Architecture-aware health checks support both x86_64 and ARM64:</p>
+
+<pre>
+{{- if $.Values.global.datacenter.arm_enabled }}
+exec:
+  command: ["/grpc_health_probe_arm64", "--addr=127.0.0.1:6481", "--tls=true"]
+{{- else }}
+exec:
+  command: ["/grpc_health_probe", "--addr=127.0.0.1:6481", "--tls=true"]
+{{- end }}
+</pre>
+
+<h2 id="deployment-automation">Deployment Automation</h2>
+
+<h3>CNAB Workflows</h3>
+
+<p>The BUILD.bazel file defines tenant-specific datacenter deployments:</p>
+
+<pre>
+DATACENTERS_PER_TENANT = {
+    CASE_MANAGEMENT_TENANT_NAME: ALL_DATACENTERS_WITH_FED,  # Includes federal
+    ON_CALL_TENANT_NAME: ALL_DATACENTERS,                  # Standard only
+}
+
+casem_cnab_workflows(
+    app_name = APP_NAME,
+    app_path = APP_PATH,
+    installations_per_tenant = DATACENTERS_PER_TENANT,
+    with_fabric_destinations = True,
+)
+</pre>
+
+<h3>Automated Deployment Targets</h3>
+
+<p>Conductor manages automated deployments with scheduled releases:</p>
+
+<table>
+<tr><th>Target</th><th>Schedule</th><th>Slack Channel</th><th>Bazel Targets</th></tr>
+<tr><td>Staging</td><td>Monday 5 AM</td><td>case-management-releases-stg</td><td>staging.publish</td></tr>
+<tr><td>Production</td><td>Monday 9 AM</td><td>case-management-releases</td><td>prod.publish, prod-fast.publish</td></tr>
+<tr><td>Government</td><td>Monday 9 AM</td><td>case-management-releases</td><td>gov artifacts</td></tr>
+</table>
+
+<h2 id="security-compliance">Security and Compliance</h2>
+
+<h3>FIPS Compliance</h3>
+
+<div class="warning">
+<strong>Government Deployments:</strong> Federal installations implement FIPS compliance through specialized configurations.
+</div>
+
+<p>FIPS compliance is achieved through:</p>
+<ul>
+    <li><strong>Dedicated FIPS container images</strong> (<code>caseapifips</code>)</li>
+    <li><strong>Specialized Datadog site</strong> (<code>app.ddog-gov.com</code>)</li>
+    <li><strong>Separate datacenter partition</strong> (<code>dd_partition: "gov-us"</code>)</li>
+    <li><strong>Isolated infrastructure</strong> (separate Kafka, databases, etc.)</li>
+</ul>
+
+<h3>Secret Management</h3>
+
+<p>Secrets are securely managed through Consul's KV store:</p>
+
+<pre>
+user: '{% with secret "kv/k8s/{{ $.Release.Namespace }}/{{ $.Release.Name }}/postgres/migration" %}{% .Data.data.username %}{% end %}'
+password: '{% with secret "kv/k8s/{{ $.Release.Namespace }}/{{ $.Release.Name }}/postgres/migration" %}{% .Data.data.password %}{% end %}'
+</pre>
+
+<h3>Network Security</h3>
+
+<ul>
+    <li><strong>TLS termination</strong> at ingress level</li>
+    <li><strong>mTLS</strong> between services via Fabric mesh</li>
+    <li><strong>Network policies</strong> for service isolation</li>
+    <li><strong>Service accounts</strong> with minimal privileges</li>
+</ul>
+
+<h2 id="development-testing">Development and Testing</h2>
+
+<h3>Development Environment</h3>
+
+<p>Local development is supported through <code>devenv.yaml</code>:</p>
+
+<pre>
+arm_enabled: false
+replicas: 1
+useTilt: true               # Tilt integration for local development
+
+db:
+  master:
+    host: postgres          # Local PostgreSQL
+    port: 5432
+  name: dogdata
+  user: dog
+  password: dog
+
+dd_clients:
+  url: "https://dd.datad0g.com"  # Staging environment
+</pre>
+
+<h3>Testing Infrastructure</h3>
+
+<ul>
+    <li><strong>Tilt Integration</strong>: <code>tilt.star</code> provides hot reloading and live updates</li>
+    <li><strong>CI/CD Testing</strong>: <code>ci/test-values.yaml</code> for automated pipeline testing</li>
+    <li><strong>Local PostgreSQL</strong>: Simplified database setup for development</li>
+</ul>
+
+<h2 id="key-patterns">Key Configuration Patterns</h2>
+
+<h3>1. Conditional Environment Variables</h3>
+
+<h4>Method 1: In Helm Templates</h4>
+<pre>
+{{- if eq $.Values.global.datacenter.datacenter "us1" }}
+- name: CUSTOM_VAR
+  value: "us1-specific-value"
+{{- else if eq $.Values.global.datacenter.datacenter "eu1" }}
+- name: CUSTOM_VAR
+  value: "eu1-specific-value"
+{{- end }}
+</pre>
+
+<h4>Method 2: Using Datacenter-Specific Values Files</h4>
+<pre>
+# In us1.prod.dog.yaml:
+custom_var: "us1-specific-value"
+
+# In eu1.prod.dog.yaml:
+custom_var: "eu1-specific-value"
+
+# Then reference in template:
+- name: CUSTOM_VAR
+  value: '{{ $.Values.custom_var }}'
+</pre>
+
+<h3>2. Government vs Commercial Deployments</h3>
+<pre>
+{{- if eq $.Values.global.dd_partition "gov-us" }}
+# Government-specific configuration
+{{- else }}
+# Commercial configuration
+{{- end }}
+</pre>
+
+<h3>3. Architecture-Specific Configurations</h3>
+<pre>
+{{- if $.Values.global.datacenter.arm_enabled }}
+# ARM64-specific configuration
+{{- else }}
+# x86_64 configuration
+{{- end }}
+</pre>
+
+<h2 id="monitoring">Monitoring and Observability</h2>
+
+<h3>Datadog Integration</h3>
+
+<p>Each datacenter connects to its region-specific Datadog instance:</p>
+<ul>
+    <li><strong>Metric collection</strong> via StatsD unix socket</li>
+    <li><strong>Log aggregation</strong> with structured logging (<code>log_format: dd-go-std</code>)</li>
+    <li><strong>APM tracing</strong> with service tags</li>
+    <li><strong>Dashboard links</strong> in service catalog</li>
+</ul>
+
+<h3>Health Monitoring</h3>
+
+<ul>
+    <li><strong>Readiness probes</strong> with gRPC health checks</li>
+    <li><strong>Service discovery</strong> integration</li>
+    <li><strong>Performance metrics</strong> collection</li>
+    <li><strong>Error tracking</strong> and alerting</li>
+</ul>
+
+<h2 id="troubleshooting">Troubleshooting Guide</h2>
+
+<h3>Common Configuration Issues</h3>
+
+<div class="warning">
+<h4>1. Database Connection Failures</h4>
+<ul>
+    <li>Check datacenter-specific database hosts in values files</li>
+    <li>Verify Consul Template secret resolution</li>
+    <li>Confirm network policies allow database access</li>
+</ul>
+</div>
+
+<div class="warning">
+<h4>2. Kafka Connection Issues</h4>
+<ul>
+    <li>Validate cluster ID matches datacenter</li>
+    <li>Check bootstrap server endpoints</li>
+    <li>Verify topic permissions and configurations</li>
+</ul>
+</div>
+
+<div class="warning">
+<h4>3. Environment Variable Problems</h4>
+<ul>
+    <li>Review <code>case-management.env_variables</code> template</li>
+    <li>Check datacenter-specific values files</li>
+    <li>Validate Helm value precedence</li>
+</ul>
+</div>
+
+<div class="warning">
+<h4>4. FIPS Compliance Issues</h4>
+<ul>
+    <li>Ensure <code>dd_partition: "gov-us"</code> is set correctly</li>
+    <li>Verify FIPS container images are being used</li>
+    <li>Check government-specific endpoints</li>
+</ul>
+</div>
+
+<h2 id="recommendations">Recommendations</h2>
+
+<h3>Best Practices for Adding New Environment Variables</h3>
+
+<div class="success">
+<ol>
+    <li><strong>Add to the central template</strong>: Update <code>case-management.env_variables</code> in <code>_labels.tpl</code></li>
+    <li><strong>Use datacenter-specific values</strong>: Define different values per datacenter in respective YAML files</li>
+    <li><strong>Test in staging first</strong>: Deploy to <code>us1.staging</code> before production datacenters</li>
+    <li><strong>Consider compliance</strong>: Separate configurations for government vs commercial deployments</li>
+</ol>
+</div>
+
+<h3>Configuration Management</h3>
+
+<ul>
+    <li><strong>Version control</strong>: All configuration changes should be tracked in git</li>
+    <li><strong>Change management</strong>: Use the CHANGELOG.md to document configuration modifications</li>
+    <li><strong>Testing</strong>: Leverage CI/CD pipelines with test-values.yaml</li>
+    <li><strong>Rollback planning</strong>: Maintain configuration rollback procedures</li>
+</ul>
+
+<h3>How to Conditionally Set Environment Variables by Datacenter</h3>
+
+<div class="highlight">
+<p><strong>Primary Method:</strong> Use datacenter-specific values files combined with Helm templating.</p>
+
+<p><strong>Step 1:</strong> Define the variable in datacenter-specific values files:</p>
+<pre>
+# In values/datacenters/us1.prod.dog.yaml
+my_custom_variable: "us1-production-value"
+
+# In values/datacenters/eu1.prod.dog.yaml
+my_custom_variable: "eu1-production-value"
+</pre>
+
+<p><strong>Step 2:</strong> Add the environment variable to the central template:</p>
+<pre>
+{{- define "case-management.env_variables" -}}
+...existing variables...
+- name: MY_CUSTOM_VARIABLE
+  value: '{{ $.Values.my_custom_variable }}'
+{{- end -}}
+</pre>
+
+<p><strong>Step 3:</strong> Test the deployment in staging before production</p>
+</div>
+
+<hr>
+
+<div class="info">
+<h3>Report Summary</h3>
+<p>This report provides a comprehensive analysis of the Case API configuration system, covering all aspects from basic structure to advanced deployment patterns. The system demonstrates sophisticated multi-datacenter orchestration with strong security and compliance capabilities.</p>
+
+<p><strong>For questions or support:</strong> Contact the case-management team via <a href="https://dd.slack.com/archives/C043TDC168M">Slack</a> or refer to the <a href="https://datadoghq.atlassian.net/wiki/spaces/CM/pages/2669183691/Case+API">documentation</a>.</p>
+</div>
+
+</body>
+</html>

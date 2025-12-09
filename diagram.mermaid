@@ -1,0 +1,130 @@
+graph TB
+    subgraph "External Systems"
+        JIRA[JIRA]
+        ServiceNow[ServiceNow]  
+        Slack[Slack]
+        DDEvents[DataDog Events]
+        DDNotebooks[DataDog Notebooks]
+    end
+
+    subgraph "Client Applications"
+        WebUI[Web UI]
+        MobileApp[Mobile App]
+        CLI[case-cli]
+        ThirdParty[Third-party Apps]
+    end
+
+    subgraph "API Gateway Layer"
+        CaseAPI[case-api<br/>gRPC Service]
+        RapidAPI[case-rapid-api<br/>HTTP REST API]
+        FileAPI[file-api<br/>File Management]
+    end
+
+    subgraph "Core Services"
+        CaseIntake[case-intake<br/>Case Creation]
+        EventHandler[case-event-handler<br/>Event Processing]
+        EventRelay[case-event-relay<br/>Event Distribution]
+        EventFeed[case-event-feed-handler<br/>External Event Feed]
+        Indexer[case-indexer<br/>Search Indexing]
+        Caseworker[caseworker<br/>Background Jobs]
+        Synthetics[case-synthetics<br/>Testing & Orchestration]
+        ChatInteractions[case-chat-interactions<br/>Slack Integration]
+        ThirdPartyReader[case-third-party-reader<br/>External Data Reader]
+    end
+
+    subgraph "Domain Logic"
+        CaseAggregate[Case Domain<br/>Core Business Logic]
+        ProjectDomain[Project Domain<br/>Organization Logic]
+        TimelineDomain[Timeline Domain<br/>Activity Tracking]
+        AutomationDomain[Automation Domain<br/>Rule Engine]
+        AttachmentDomain[Attachment Domain<br/>File Management]
+        WatcherDomain[Watcher Domain<br/>Subscriptions]
+        CustomAttrDomain[Custom Attributes<br/>Dynamic Fields]
+        LinkDomain[Link Domain<br/>Case Relationships]
+    end
+
+    subgraph "Data Layer"
+        PostgreSQL[(PostgreSQL<br/>Primary Database)]
+        Elasticsearch[(Elasticsearch<br/>Search & Analytics)]
+        FileStorage[(File Storage<br/>Attachments)]
+    end
+
+    subgraph "Infrastructure"
+        Kubernetes[Kubernetes<br/>Container Orchestration]
+        Helm[Helm Charts<br/>Deployment]
+        Nexus[Nexus<br/>Real-time Notifications]
+        AAA[AAA<br/>Authentication]
+        OrgStore[OrgStore<br/>Organization Mgmt]
+    end
+
+    subgraph "Multi-Tenant Support"
+        OnCallTenant[OnCall Tenant<br/>Incident Management]
+        CaseMgmtTenant[Case Management Tenant<br/>General Cases]
+    end
+
+    %% External connections
+    JIRA --> ThirdPartyReader
+    ServiceNow --> ThirdPartyReader
+    Slack --> ChatInteractions
+    DDEvents --> EventFeed
+    DDNotebooks --> CaseAPI
+
+    %% Client connections
+    WebUI --> CaseAPI
+    WebUI --> RapidAPI
+    MobileApp --> RapidAPI
+    CLI --> CaseAPI
+    ThirdParty --> RapidAPI
+
+    %% API Gateway to Services
+    CaseAPI --> CaseIntake
+    CaseAPI --> EventHandler
+    CaseAPI --> Caseworker
+    RapidAPI --> CaseAPI
+    FileAPI --> AttachmentDomain
+
+    %% Service interconnections
+    CaseIntake --> EventRelay
+    EventHandler --> EventRelay
+    EventRelay --> Indexer
+    EventFeed --> EventHandler
+    ThirdPartyReader --> EventHandler
+    ChatInteractions --> EventHandler
+    Synthetics --> CaseAPI
+
+    %% Domain to Data
+    CaseAggregate --> PostgreSQL
+    ProjectDomain --> PostgreSQL
+    TimelineDomain --> PostgreSQL
+    AutomationDomain --> PostgreSQL
+    AttachmentDomain --> FileStorage
+    WatcherDomain --> PostgreSQL
+    CustomAttrDomain --> PostgreSQL
+    LinkDomain --> PostgreSQL
+
+    %% Search and Analytics
+    Indexer --> Elasticsearch
+    CaseAPI --> Elasticsearch
+
+    %% Infrastructure connections
+    CaseAPI --> AAA
+    CaseAPI --> OrgStore
+    EventRelay --> Nexus
+    CaseAPI --> OnCallTenant
+    CaseAPI --> CaseMgmtTenant
+
+    %% Styling
+    classDef external fill:#ffcccc
+    classDef api fill:#ccffcc
+    classDef service fill:#ccccff
+    classDef domain fill:#ffffcc
+    classDef data fill:#ffccff
+    classDef infra fill:#ccffff
+
+    class JIRA,ServiceNow,Slack,DDEvents,DDNotebooks external
+    class CaseAPI,RapidAPI,FileAPI api
+    class CaseIntake,EventHandler,EventRelay,EventFeed,Indexer,Caseworker,Synthetics,ChatInteractions,ThirdPartyReader service
+    class CaseAggregate,ProjectDomain,TimelineDomain,AutomationDomain,AttachmentDomain,WatcherDomain,CustomAttrDomain,LinkDomain domain
+    class PostgreSQL,Elasticsearch,FileStorage data
+    class Kubernetes,Helm,Nexus,AAA,OrgStore,OnCallTenant,CaseMgmtTenant infra
+    

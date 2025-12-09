@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>case_management_architecture_report.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="case-management-domain-architecture-report">Case Management Domain Architecture Report</h1>
+<h2 id="overview">Overview</h2>
+<p>The Case Management domain at DataDog is a sophisticated, multi-tenant system designed to handle both incident management (OnCall) and general case/ticket management workflows. The architecture follows Domain-Driven Design (DDD) principles with a microservices approach, supporting real-time operations, extensive third-party integrations, and enterprise-scale deployment.</p>
+<h2 id="architecture-diagram">Architecture Diagram</h2>
+<pre><code class="language-mermaid"><div class="mermaid">graph TB
+    subgraph "External Systems"
+        JIRA[JIRA]
+        ServiceNow[ServiceNow]  
+        Slack[Slack]
+        DDEvents[DataDog Events]
+        DDNotebooks[DataDog Notebooks]
+    end
+
+    subgraph "Client Applications"
+        WebUI[Web UI]
+        MobileApp[Mobile App]
+        CLI[case-cli]
+        ThirdParty[Third-party Apps]
+    end
+
+    subgraph "API Gateway Layer"
+        CaseAPI[case-api<br/>gRPC Service]
+        RapidAPI[case-rapid-api<br/>HTTP REST API]
+        FileAPI[file-api<br/>File Management]
+    end
+
+    subgraph "Core Services"
+        CaseIntake[case-intake<br/>Case Creation]
+        EventHandler[case-event-handler<br/>Event Processing]
+        EventRelay[case-event-relay<br/>Event Distribution]
+        EventFeed[case-event-feed-handler<br/>External Event Feed]
+        Indexer[case-indexer<br/>Search Indexing]
+        Caseworker[caseworker<br/>Background Jobs]
+        Synthetics[case-synthetics<br/>Testing & Orchestration]
+        ChatInteractions[case-chat-interactions<br/>Slack Integration]
+        ThirdPartyReader[case-third-party-reader<br/>External Data Reader]
+    end
+
+    subgraph "Domain Logic"
+        CaseAggregate[Case Domain<br/>Core Business Logic]
+        ProjectDomain[Project Domain<br/>Organization Logic]
+        TimelineDomain[Timeline Domain<br/>Activity Tracking]
+        AutomationDomain[Automation Domain<br/>Rule Engine]
+        AttachmentDomain[Attachment Domain<br/>File Management]
+        WatcherDomain[Watcher Domain<br/>Subscriptions]
+        CustomAttrDomain[Custom Attributes<br/>Dynamic Fields]
+        LinkDomain[Link Domain<br/>Case Relationships]
+    end
+
+    subgraph "Data Layer"
+        PostgreSQL[(PostgreSQL<br/>Primary Database)]
+        Elasticsearch[(Elasticsearch<br/>Search & Analytics)]
+        FileStorage[(File Storage<br/>Attachments)]
+    end
+
+    subgraph "Infrastructure"
+        Kubernetes[Kubernetes<br/>Container Orchestration]
+        Helm[Helm Charts<br/>Deployment]
+        Nexus[Nexus<br/>Real-time Notifications]
+        AAA[AAA<br/>Authentication]
+        OrgStore[OrgStore<br/>Organization Mgmt]
+    end
+
+    subgraph "Multi-Tenant Support"
+        OnCallTenant[OnCall Tenant<br/>Incident Management]
+        CaseMgmtTenant[Case Management Tenant<br/>General Cases]
+    end
+
+    %% External connections
+    JIRA --> ThirdPartyReader
+    ServiceNow --> ThirdPartyReader
+    Slack --> ChatInteractions
+    DDEvents --> EventFeed
+    DDNotebooks --> CaseAPI
+
+    %% Client connections
+    WebUI --> CaseAPI
+    WebUI --> RapidAPI
+    MobileApp --> RapidAPI
+    CLI --> CaseAPI
+    ThirdParty --> RapidAPI
+
+    %% API Gateway to Services
+    CaseAPI --> CaseIntake
+    CaseAPI --> EventHandler
+    CaseAPI --> Caseworker
+    RapidAPI --> CaseAPI
+    FileAPI --> AttachmentDomain
+
+    %% Service interconnections
+    CaseIntake --> EventRelay
+    EventHandler --> EventRelay
+    EventRelay --> Indexer
+    EventFeed --> EventHandler
+    ThirdPartyReader --> EventHandler
+    ChatInteractions --> EventHandler
+    Synthetics --> CaseAPI
+
+    %% Domain to Data
+    CaseAggregate --> PostgreSQL
+    ProjectDomain --> PostgreSQL
+    TimelineDomain --> PostgreSQL
+    AutomationDomain --> PostgreSQL
+    AttachmentDomain --> FileStorage
+    WatcherDomain --> PostgreSQL
+    CustomAttrDomain --> PostgreSQL
+    LinkDomain --> PostgreSQL
+
+    %% Search and Analytics
+    Indexer --> Elasticsearch
+    CaseAPI --> Elasticsearch
+
+    %% Infrastructure connections
+    CaseAPI --> AAA
+    CaseAPI --> OrgStore
+    EventRelay --> Nexus
+    CaseAPI --> OnCallTenant
+    CaseAPI --> CaseMgmtTenant
+
+    %% Styling
+    classDef external fill:#ffcccc
+    classDef api fill:#ccffcc
+    classDef service fill:#ccccff
+    classDef domain fill:#ffffcc
+    classDef data fill:#ffccff
+    classDef infra fill:#ccffff
+
+    class JIRA,ServiceNow,Slack,DDEvents,DDNotebooks external
+    class CaseAPI,RapidAPI,FileAPI api
+    class CaseIntake,EventHandler,EventRelay,EventFeed,Indexer,Caseworker,Synthetics,ChatInteractions,ThirdPartyReader service
+    class CaseAggregate,ProjectDomain,TimelineDomain,AutomationDomain,AttachmentDomain,WatcherDomain,CustomAttrDomain,LinkDomain domain
+    class PostgreSQL,Elasticsearch,FileStorage data
+    class Kubernetes,Helm,Nexus,AAA,OrgStore,OnCallTenant,CaseMgmtTenant infra
+</div></code></pre>
+<h2 id="service-descriptions">Service Descriptions</h2>
+<h3 id="api-gateway-layer">API Gateway Layer</h3>
+<h4 id="case-api-grpc-service">case-api (gRPC Service)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-api/</code></li>
+<li><strong>Purpose</strong>: Primary gRPC API service providing the main interface for all case management operations</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Multi-tenant support (OnCall and Case Management)</li>
+<li>Full CRUD operations for cases, projects, and related entities</li>
+<li>Real-time event streaming</li>
+<li>Authentication and authorization integration</li>
+</ul>
+</li>
+<li><strong>Proto Definitions</strong>: Comprehensive gRPC service definitions in <code>proto/</code> directory</li>
+</ul>
+<h4 id="case-rapid-api-http-rest-api">case-rapid-api (HTTP REST API)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/apis/case-rapid-api/</code></li>
+<li><strong>Purpose</strong>: HTTP REST API for external integrations and web applications</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>RESTful endpoints mirroring gRPC functionality</li>
+<li>JSON request/response format</li>
+<li>External system integration support</li>
+<li>Rate limiting and authentication</li>
+</ul>
+</li>
+</ul>
+<h4 id="file-api-file-management-service">file-api (File Management Service)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/apis/file-api/</code></li>
+<li><strong>Purpose</strong>: Dedicated service for handling file attachments</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>File upload/download operations</li>
+<li>Metadata management</li>
+<li>Security scanning</li>
+<li>Storage abstraction layer</li>
+</ul>
+</li>
+</ul>
+<h3 id="core-processing-services">Core Processing Services</h3>
+<h4 id="case-intake-case-creation-service">case-intake (Case Creation Service)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-intake/</code></li>
+<li><strong>Purpose</strong>: Handles new case creation and initial processing</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Input validation and sanitization</li>
+<li>Case type routing</li>
+<li>Initial enrichment</li>
+<li>Event generation for new cases</li>
+</ul>
+</li>
+</ul>
+<h4 id="case-event-handler-event-processing-engine">case-event-handler (Event Processing Engine)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-event-handler/</code></li>
+<li><strong>Purpose</strong>: Central event processing engine for all case-related events</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Event sourcing implementation</li>
+<li>State transition validation</li>
+<li>Business rule enforcement</li>
+<li>Timeline generation</li>
+</ul>
+</li>
+</ul>
+<h4 id="case-event-relay-event-distribution-service">case-event-relay (Event Distribution Service)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-event-relay/</code></li>
+<li><strong>Purpose</strong>: Distributes events to various consumers and external systems</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Pub/sub pattern implementation</li>
+<li>Event routing based on rules</li>
+<li>Guaranteed delivery mechanisms</li>
+<li>Integration with Nexus for real-time notifications</li>
+</ul>
+</li>
+</ul>
+<h4 id="case-indexer-search-indexing-service">case-indexer (Search Indexing Service)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-indexer/</code></li>
+<li><strong>Purpose</strong>: Maintains Elasticsearch indices for case search and analytics</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Real-time index updates</li>
+<li>Bulk indexing operations</li>
+<li>Search optimization</li>
+<li>Analytics data preparation</li>
+</ul>
+</li>
+</ul>
+<h4 id="caseworker-background-job-service">caseworker (Background Job Service)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/caseworker/</code></li>
+<li><strong>Purpose</strong>: Handles asynchronous background operations</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Scheduled task execution</li>
+<li>Bulk operations processing</li>
+<li>Data cleanup and maintenance</li>
+<li>Report generation</li>
+</ul>
+</li>
+</ul>
+<h3 id="integration-services">Integration Services</h3>
+<h4 id="case-third-party-reader-external-system-integration">case-third-party-reader (External System Integration)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-third-party-reader/</code></li>
+<li><strong>Purpose</strong>: Reads data from external systems like JIRA and ServiceNow</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Bi-directional synchronization</li>
+<li>Data transformation and mapping</li>
+<li>Conflict resolution</li>
+<li>Rate limiting for external APIs</li>
+</ul>
+</li>
+</ul>
+<h4 id="case-chat-interactions-slack-integration">case-chat-interactions (Slack Integration)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-chat-interactions/</code></li>
+<li><strong>Purpose</strong>: Provides Slack integration for case management workflows</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Slack bot functionality</li>
+<li>Interactive case creation/updates</li>
+<li>Notification management</li>
+<li>Slash command support</li>
+</ul>
+</li>
+</ul>
+<h4 id="case-synthetics-testing--orchestration">case-synthetics (Testing &amp; Orchestration)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/apps/case-synthetics/</code></li>
+<li><strong>Purpose</strong>: Synthetic testing and service orchestration</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>End-to-end testing</li>
+<li>Service health monitoring</li>
+<li>Workflow orchestration</li>
+<li>Performance testing</li>
+</ul>
+</li>
+</ul>
+<h3 id="domain-logic-layer">Domain Logic Layer</h3>
+<h4 id="case-domain-core-aggregate">Case Domain (Core Aggregate)</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/libs/casem/</code></li>
+<li><strong>Purpose</strong>: Core business logic for case management</li>
+<li><strong>Key Entities</strong>:
+<ul>
+<li>Case aggregate root</li>
+<li>Case status and lifecycle management</li>
+<li>Priority and escalation logic</li>
+<li>Assignment and routing rules</li>
+</ul>
+</li>
+</ul>
+<h4 id="project-domain">Project Domain</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/libs/project/</code></li>
+<li><strong>Purpose</strong>: Project organization and management</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Project hierarchy management</li>
+<li>Team and user assignments</li>
+<li>Project-level configurations</li>
+<li>Favorites and preferences</li>
+</ul>
+</li>
+</ul>
+<h4 id="timeline-domain">Timeline Domain</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/libs/timeline/</code></li>
+<li><strong>Purpose</strong>: Case activity tracking and timeline management</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Activity logging</li>
+<li>Comment and update tracking</li>
+<li>Timeline visualization</li>
+<li>Activity filtering and search</li>
+</ul>
+</li>
+</ul>
+<h4 id="automation-domain">Automation Domain</h4>
+<ul>
+<li><strong>Location</strong>: <code>domains/case_management/libs/automation/</code></li>
+<li><strong>Purpose</strong>: Business rule engine and workflow automation</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Rule definition and execution</li>
+<li>Trigger-based automation</li>
+<li>Workflow orchestration</li>
+<li>SLA management</li>
+</ul>
+</li>
+</ul>
+<h3 id="data-layer">Data Layer</h3>
+<h4 id="postgresql-database">PostgreSQL Database</h4>
+<ul>
+<li><strong>Primary Storage</strong>: Main transactional database for all case management data</li>
+<li><strong>Key Tables</strong>:
+<ul>
+<li><code>case</code>: Core case entity with full audit trail</li>
+<li><code>project</code>: Project organization structure</li>
+<li><code>timeline_cell</code>: Activity and timeline entries</li>
+<li><code>automation_rule</code>: Business automation rules</li>
+<li><code>custom_attribute</code>: Dynamic field definitions</li>
+<li><code>case_link</code>: Case relationship mapping</li>
+</ul>
+</li>
+<li><strong>Migration Management</strong>: 132+ migrations showing system evolution</li>
+</ul>
+<h4 id="elasticsearch-cluster">Elasticsearch Cluster</h4>
+<ul>
+<li><strong>Search Engine</strong>: Full-text search and analytics platform</li>
+<li><strong>Key Indices</strong>:
+<ul>
+<li>Case search index with faceted search</li>
+<li>Analytics aggregation data</li>
+<li>Auto-complete suggestions</li>
+</ul>
+</li>
+<li><strong>Features</strong>:
+<ul>
+<li>Real-time search capabilities</li>
+<li>Advanced filtering and faceting</li>
+<li>Analytics and reporting queries</li>
+</ul>
+</li>
+</ul>
+<h3 id="multi-tenant-architecture">Multi-Tenant Architecture</h3>
+<h4 id="oncall-tenant">OnCall Tenant</h4>
+<ul>
+<li><strong>Purpose</strong>: Incident management and emergency response</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Rapid case creation from alerts</li>
+<li>Integration with DataDog monitoring</li>
+<li>Escalation procedures</li>
+<li>On-call rotation management</li>
+</ul>
+</li>
+</ul>
+<h4 id="case-management-tenant">Case Management Tenant</h4>
+<ul>
+<li><strong>Purpose</strong>: General case and ticket management</li>
+<li><strong>Key Features</strong>:
+<ul>
+<li>Flexible case types and workflows</li>
+<li>Customer service integration</li>
+<li>SLA tracking</li>
+<li>Custom field management</li>
+</ul>
+</li>
+</ul>
+<h2 id="deployment-architecture">Deployment Architecture</h2>
+<h3 id="kubernetes-infrastructure">Kubernetes Infrastructure</h3>
+<ul>
+<li><strong>Multi-datacenter deployment</strong>: ap1, ap2, eu1, us1, us3, us5</li>
+<li><strong>Helm-based deployments</strong>: Standardized configuration management</li>
+<li><strong>Auto-scaling</strong>: Horizontal pod autoscaling based on metrics</li>
+<li><strong>Service mesh</strong>: Inter-service communication and observability</li>
+</ul>
+<h3 id="configuration-management">Configuration Management</h3>
+<ul>
+<li><strong>Environment-specific configurations</strong>: Staging and production variants</li>
+<li><strong>Tenant-specific settings</strong>: Isolated configurations per tenant</li>
+<li><strong>Feature flags</strong>: Runtime behavior modification</li>
+<li><strong>Secret management</strong>: Secure credential handling</li>
+</ul>
+<h2 id="key-integrations">Key Integrations</h2>
+<h3 id="external-systems">External Systems</h3>
+<ol>
+<li><strong>JIRA</strong>: Bi-directional issue synchronization</li>
+<li><strong>ServiceNow</strong>: Service management integration</li>
+<li><strong>Slack</strong>: Real-time notifications and interactive workflows</li>
+<li><strong>DataDog Events</strong>: Event correlation and enrichment</li>
+<li><strong>DataDog Notebooks</strong>: Investigation workflow integration</li>
+</ol>
+<h3 id="internal-datadog-services">Internal DataDog Services</h3>
+<ol>
+<li><strong>AAA (Authentication, Authorization, Accounting)</strong>: User management</li>
+<li><strong>OrgStore</strong>: Organization and account management</li>
+<li><strong>OUI (Org User Info)</strong>: User profile and preference service</li>
+<li><strong>Nexus</strong>: Real-time notification delivery</li>
+<li><strong>OnCall</strong>: PagerDuty-style incident management</li>
+</ol>
+<h2 id="technical-highlights">Technical Highlights</h2>
+<h3 id="event-driven-architecture">Event-Driven Architecture</h3>
+<ul>
+<li><strong>Event Sourcing</strong>: Complete audit trail of all case changes</li>
+<li><strong>CQRS Pattern</strong>: Separation of command and query responsibilities</li>
+<li><strong>Real-time Processing</strong>: Immediate event propagation and processing</li>
+<li><strong>Event Replay</strong>: Ability to rebuild state from events</li>
+</ul>
+<h3 id="scalability-features">Scalability Features</h3>
+<ul>
+<li><strong>Horizontal Scaling</strong>: Stateless services with load balancing</li>
+<li><strong>Database Sharding</strong>: Tenant-based data isolation</li>
+<li><strong>Caching Strategies</strong>: Multi-level caching for performance</li>
+<li><strong>Async Processing</strong>: Background job queues for heavy operations</li>
+</ul>
+<h3 id="security-and-compliance">Security and Compliance</h3>
+<ul>
+<li><strong>Multi-tenant Isolation</strong>: Secure data separation</li>
+<li><strong>Role-based Access Control</strong>: Granular permission management</li>
+<li><strong>Audit Logging</strong>: Complete operation tracking</li>
+<li><strong>Data Encryption</strong>: At-rest and in-transit encryption</li>
+</ul>
+<h2 id="development-and-operations">Development and Operations</h2>
+<h3 id="development-tools">Development Tools</h3>
+<ul>
+<li><strong>CLI Interface</strong>: <code>case-cli</code> for administrative operations</li>
+<li><strong>Local Development</strong>: Tilt-based development environment</li>
+<li><strong>Testing</strong>: Comprehensive unit and integration test suites</li>
+<li><strong>API Documentation</strong>: Auto-generated from Protocol Buffer definitions</li>
+</ul>
+<h3 id="monitoring-and-observability">Monitoring and Observability</h3>
+<ul>
+<li><strong>Metrics Collection</strong>: Prometheus-based metrics</li>
+<li><strong>Distributed Tracing</strong>: Full request tracing across services</li>
+<li><strong>Log Aggregation</strong>: Centralized logging with structured data</li>
+<li><strong>Health Checks</strong>: Service health monitoring and alerting</li>
+</ul>
+<p>This architecture represents a mature, enterprise-grade case management platform capable of handling high-volume, mission-critical operations while maintaining flexibility for diverse use cases and integration requirements.</p>
+
+</body>
+</html>
