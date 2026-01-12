@@ -1,0 +1,73 @@
+graph TB
+    subgraph "Kafka Message Structure"
+        MSG[Kafka Message]
+        KEY[Partition Key<br/>Case UUID / Monitor Key]
+        HEADERS[Headers<br/>Trace Context, Metadata]
+        PAYLOAD[Message Payload]
+        TIMESTAMP[Message Timestamp]
+    end
+    
+    subgraph "Custom Binary Format"
+        PAYLOAD --> VERSION[Byte 0: Version<br/>0x02 = Version 2]
+        PAYLOAD --> TYPE[Byte 1: Type Identifier]
+        PAYLOAD --> PROTOBUF[Bytes 2+: Protobuf Data]
+    end
+    
+    subgraph "Type Identifiers"
+        TYPE --> CREATE_TYPE[0x02 = CreateRequest]
+        TYPE --> UPDATE_TYPE[0x03 = UpdateRequest]
+        TYPE --> CELL_TYPE[0x04 = CreateCellRequest]
+        TYPE --> SYNC_TYPE[0x05 = IntegrationIncrementalSyncRequest]
+    end
+    
+    subgraph "Protobuf Message Types"
+        CREATE_TYPE --> CREATE_PROTO[casepb.CreateRequest<br/>• Creation Source<br/>• Author Information<br/>• Org ID<br/>• Case Title & Type<br/>• Attributes]
+        
+        UPDATE_TYPE --> UPDATE_PROTO[casepb.UpdateRequest<br/>• Case Identifier<br/>• Author<br/>• Update Actions Array<br/>• Priority, Status, etc.]
+        
+        CELL_TYPE --> CELL_PROTO[timelinepb.CreateCellRequest<br/>• Case Identifier<br/>• Author<br/>• Cell Content<br/>• Comments, Attachments]
+        
+        SYNC_TYPE --> SYNC_PROTO[casepb.IntegrationIncrementalSyncRequest<br/>• Case Identifier<br/>• Integration Data<br/>• Sync Metadata]
+    end
+    
+    subgraph "Partitioning Strategy"
+        KEY --> CASE_PARTITION[Case UUID:<br/>uuid.ID mod 32]
+        KEY --> MONITOR_PARTITION[Monitor Key:<br/>sha1 mod 32]
+        
+        CASE_PARTITION --> PARTITION_BENEFIT[Benefits:<br/>• Same case → Same partition<br/>• Event ordering guaranteed<br/>• Parallel processing]
+        MONITOR_PARTITION --> PARTITION_BENEFIT
+    end
+    
+    subgraph "Message Headers"
+        HEADERS --> TRACE_HEADERS[Tracing Headers:<br/>• x-datadog-trace-id<br/>• x-datadog-parent-id<br/>• x-datadog-sampling-priority]
+        HEADERS --> META_HEADERS[Metadata Headers:<br/>• Query Source<br/>• Request Context<br/>• Authorization Info]
+    end
+    
+    subgraph "Encoding/Decoding Process"
+        ENCODE[Encoding Process]
+        ENCODE --> PROTO_MARSHAL[1. proto.Marshal request]
+        ENCODE --> TYPE_PREPEND[2. Prepend Version and Type]
+        ENCODE --> KAFKA_PUBLISH[3. Kafka Publish]
+        
+        DECODE[Decoding Process]
+        DECODE --> VERSION_CHECK[1. Check Version Byte]
+        DECODE --> TYPE_EXTRACT[2. Extract Type Identifier]
+        DECODE --> PROTO_UNMARSHAL[3. proto.Unmarshal payload]
+        DECODE --> STRUCT_CREATE[4. Create Typed Struct]
+    end
+    
+    classDef message fill:#e3f2fd
+    classDef format fill:#fff3e0
+    classDef types fill:#f3e5f5
+    classDef protobuf fill:#e8f5e8
+    classDef partition fill:#fce4ec
+    classDef headers fill:#f1f8e9
+    classDef process fill:#e1f5fe
+    
+    class MSG,KEY,HEADERS,PAYLOAD,TIMESTAMP message
+    class VERSION,TYPE,PROTOBUF format
+    class CREATE_TYPE,UPDATE_TYPE,CELL_TYPE,SYNC_TYPE types
+    class CREATE_PROTO,UPDATE_PROTO,CELL_PROTO,SYNC_PROTO protobuf
+    class CASE_PARTITION,MONITOR_PARTITION,PARTITION_BENEFIT partition
+    class TRACE_HEADERS,META_HEADERS headers
+    class ENCODE,PROTO_MARSHAL,TYPE_PREPEND,KAFKA_PUBLISH,DECODE,VERSION_CHECK,TYPE_EXTRACT,PROTO_UNMARSHAL,STRUCT_CREATE process

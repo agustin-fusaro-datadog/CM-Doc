@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant CLIENT as Client Applications
+    participant INTAKE as case-intake Topic
+    participant INDEXER as case-indexer
+    participant CASE_API as Case API Service
+    participant TIMELINE_API as Timeline API Service
+    participant ES as Elasticsearch
+    participant PG as PostgreSQL
+    
+    Note over CLIENT: Case Management Operations
+    CLIENT->>INTAKE: Publish Request<br/>(CreateRequest, UpdateRequest, etc.)
+    
+    Note over INDEXER: Kafka Consumer Processing
+    INTAKE->>INDEXER: Pull Message Batch<br/>(1000 messages max)
+    INDEXER->>INDEXER: Decode Intake Payload<br/>(Protobuf)
+    
+    Note over INDEXER: case-indexer does NOT touch ES directly
+    
+    alt Case Operations (CreateRequest/UpdateRequest)
+        INDEXER->>CASE_API: gRPC Call<br/>caseClient.Create/Update()
+        Note over CASE_API: case-api handles ES integration
+        CASE_API->>PG: Store Case Data
+        CASE_API->>ES: Index Case Document
+        CASE_API->>INDEXER: gRPC Response
+    end
+    
+    alt Timeline Operations (CreateCellRequest)
+        INDEXER->>TIMELINE_API: gRPC Call<br/>timelineClient.CreateCell()
+        Note over TIMELINE_API: timeline-api handles ES integration
+        TIMELINE_API->>PG: Store Timeline Data
+        TIMELINE_API->>ES: Update Case Analytics
+        TIMELINE_API->>INDEXER: gRPC Response
+    end
+    
+    alt Integration Sync (IntegrationIncrementalSyncRequest)
+        INDEXER->>CASE_API: gRPC Call<br/>caseClient.IntegrationIncrementalSync()
+        Note over CASE_API: case-api handles ES integration
+        CASE_API->>ES: Update Integration Data
+        CASE_API->>INDEXER: gRPC Response
+    end
+    
+    Note over INDEXER: Error Handling & Retry Logic
+    alt Retriable Error
+        INDEXER->>INDEXER: Exponential Backoff Retry
+        INDEXER->>INDEXER: Fatal Error → Pod Restart
+    end
+    
+    alt Non-Retriable Error
+        INDEXER->>INDEXER: Log & Skip Message
+    end
+    
+    INDEXER->>INTAKE: Acknowledge Message

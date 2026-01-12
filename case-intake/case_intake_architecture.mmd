@@ -1,0 +1,72 @@
+graph TB
+    subgraph "Client Applications"
+        WEB[Web Interface]
+        API[REST APIs]
+        MOBILE[Mobile Apps]
+        INTEGRATIONS[External Integrations<br/>Jira, ServiceNow, etc.]
+        MONITORS[Monitor Services<br/>delancie-notification]
+        EVENTS[Event Correlation<br/>inbox-issue-api]
+    end
+    
+    subgraph "Service Mesh & Load Balancing"
+        FABRIC[Fabric Proxy<br/>Service Discovery]
+        DNS[Private DNS<br/>case-intake.case-management]
+        LB[Load Balancer]
+    end
+    
+    subgraph "case-intake Service (gRPC:8289)"
+        RATE_LIMIT[Rate Limiting<br/>Interceptor]
+        VALIDATION[Request Validation<br/>Length & Attributes]
+        SERVER[gRPC Server<br/>4 Endpoints]
+        PRODUCER[Kafka Producer<br/>Message Publishing]
+    end
+    
+    subgraph "Rate Limiting Infrastructure"
+        RL_SVC[notification-platform<br/>rate-limiter Service<br/>32 Partitions]
+    end
+    
+    subgraph "Message Queue"
+        KAFKA[Kafka Topic: case-intake<br/>32 Partitions<br/>Custom Binary Format]
+    end
+    
+    subgraph "Health & Monitoring"
+        HEALTH[Health Endpoints<br/>:8080/liveness<br/>:8080/readiness]
+        DATADOG[Datadog Metrics<br/>Traces & Logs]
+        DASHBOARDS[Monitoring Dashboards]
+    end
+    
+    WEB --> FABRIC
+    API --> FABRIC
+    MOBILE --> FABRIC
+    INTEGRATIONS --> FABRIC
+    MONITORS --> FABRIC
+    EVENTS --> FABRIC
+    
+    FABRIC --> DNS
+    DNS --> LB
+    LB --> RATE_LIMIT
+    
+    RATE_LIMIT --> RL_SVC
+    RATE_LIMIT --> VALIDATION
+    VALIDATION --> SERVER
+    SERVER --> PRODUCER
+    
+    PRODUCER --> KAFKA
+    
+    SERVER --> HEALTH
+    SERVER --> DATADOG
+    DATADOG --> DASHBOARDS
+    
+    classDef client fill:#e3f2fd
+    classDef mesh fill:#fff3e0
+    classDef intake fill:#f3e5f5
+    classDef ratelimit fill:#e8f5e8
+    classDef kafka fill:#fff3e0
+    classDef monitoring fill:#fce4ec
+    
+    class WEB,API,MOBILE,INTEGRATIONS,MONITORS,EVENTS client
+    class FABRIC,DNS,LB mesh
+    class RATE_LIMIT,VALIDATION,SERVER,PRODUCER intake
+    class RL_SVC ratelimit
+    class KAFKA kafka
+    class HEALTH,DATADOG,DASHBOARDS monitoring

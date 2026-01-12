@@ -1,0 +1,115 @@
+graph TB
+    subgraph "Staging Environment"
+        STG[staging-full-site]
+        STG_DEPLOY[1 Replica<br/>1 CPU, 1-2GB Memory<br/>Dangerous Parallel Deployment<br/>Dynamic Instrumentation Enabled]
+        STG_KAFKA[Staging Kafka<br/>case-intake Topic]
+        STG_RL[Staging Rate Limiter<br/>notification-platform]
+    end
+    
+    subgraph "Production Environment"
+        PROD[prod-site]
+        
+        subgraph "US1 Datacenter"
+            US1_DEPLOY[1 Replica<br/>1 CPU, 1-2GB Memory<br/>Delta Deployment]
+            US1_KAFKA[US1 Kafka Cluster]
+            US1_RL[US1 Rate Limiter]
+            US1_REMOTE[Fabric Remote: AP1]
+        end
+        
+        subgraph "EU1 Datacenter"
+            EU1_DEPLOY[1 Replica<br/>1 CPU, 1-2GB Memory<br/>Delta Deployment]
+            EU1_KAFKA[EU1 Kafka Cluster]
+            EU1_RL[EU1 Rate Limiter]
+            EU1_REMOTE[Fabric Remote: US1]
+        end
+        
+        subgraph "Other DCs (US3, US5, AP1)"
+            OTHER_DEPLOY[1 Replica Each<br/>1 CPU, 1-2GB Memory<br/>Delta Deployment]
+            OTHER_KAFKA[Regional Kafka Clusters]
+            OTHER_RL[Regional Rate Limiters]
+        end
+    end
+    
+    subgraph "Government Environment"
+        GOV[fed-site]
+        GOV_DEPLOY[1 Replica<br/>1 CPU, 1-2GB Memory<br/>FIPS-Compliant Images<br/>Delta Deployment]
+        GOV_KAFKA[Government Kafka Cluster]
+        GOV_RL[Government Rate Limiter]
+    end
+    
+    subgraph "Deployment Schedule"
+        MON_5AM[Monday 5:00 AM<br/>Staging Deployment]
+        MON_930AM[Monday 9:30 AM<br/>Production Deployment]
+        WED_930AM[Wednesday 9:30 AM<br/>Government Deployment]
+    end
+    
+    subgraph "Network Policies & Security"
+        CNP[Cilium Network Policies<br/>Ingress Access Control]
+        SERVICES[Allowed Services:<br/>delancie-notification<br/>inbox-issue-api<br/>event-correlation-relay]
+    end
+    
+    subgraph "Monitoring & Observability"
+        HEALTH_CHECKS[Health Checks<br/>:8080/liveness<br/>:8080/readiness]
+        METRICS[StatsD Metrics<br/>Request Count, Latency<br/>Rate Limit Status]
+        TRACES[Distributed Tracing<br/>dd-trace-go]
+        DASH[Environment Dashboards<br/>Staging & Production]
+    end
+    
+    STG --> STG_DEPLOY
+    STG_DEPLOY --> STG_KAFKA
+    STG_DEPLOY --> STG_RL
+    
+    PROD --> US1_DEPLOY
+    PROD --> EU1_DEPLOY
+    PROD --> OTHER_DEPLOY
+    
+    US1_DEPLOY --> US1_KAFKA
+    US1_DEPLOY --> US1_RL
+    US1_DEPLOY --> US1_REMOTE
+    
+    EU1_DEPLOY --> EU1_KAFKA
+    EU1_DEPLOY --> EU1_RL
+    EU1_DEPLOY --> EU1_REMOTE
+    
+    OTHER_DEPLOY --> OTHER_KAFKA
+    OTHER_DEPLOY --> OTHER_RL
+    
+    GOV --> GOV_DEPLOY
+    GOV_DEPLOY --> GOV_KAFKA
+    GOV_DEPLOY --> GOV_RL
+    
+    MON_5AM --> STG
+    MON_930AM --> PROD
+    WED_930AM --> GOV
+    
+    STG_DEPLOY --> CNP
+    US1_DEPLOY --> CNP
+    EU1_DEPLOY --> CNP
+    OTHER_DEPLOY --> CNP
+    GOV_DEPLOY --> CNP
+    
+    CNP --> SERVICES
+    
+    STG_DEPLOY --> HEALTH_CHECKS
+    US1_DEPLOY --> HEALTH_CHECKS
+    EU1_DEPLOY --> HEALTH_CHECKS
+    OTHER_DEPLOY --> HEALTH_CHECKS
+    GOV_DEPLOY --> HEALTH_CHECKS
+    
+    HEALTH_CHECKS --> METRICS
+    METRICS --> TRACES
+    TRACES --> DASH
+    
+    classDef staging fill:#e1f5fe
+    classDef prod fill:#e8f5e8
+    classDef gov fill:#fff3e0
+    classDef schedule fill:#f3e5f5
+    classDef security fill:#fce4ec
+    classDef monitoring fill:#f1f8e9
+    
+    class STG,STG_DEPLOY,STG_KAFKA,STG_RL staging
+    class PROD,US1_DEPLOY,US1_KAFKA,US1_RL,US1_REMOTE,EU1_DEPLOY,EU1_KAFKA,EU1_RL,EU1_REMOTE,OTHER_DEPLOY,OTHER_KAFKA,OTHER_RL prod
+    class GOV,GOV_DEPLOY,GOV_KAFKA,GOV_RL gov
+    class MON_5AM,MON_930AM,WED_930AM schedule
+    class CNP,SERVICES security
+    class HEALTH_CHECKS,METRICS,TRACES,DASH monitoring

@@ -1,0 +1,48 @@
+sequenceDiagram
+    participant CLIENT as Client Application
+    participant FABRIC as Fabric Proxy
+    participant INTAKE as case-intake Service
+    participant RATELIM as Rate Limiter
+    participant KAFKA as Kafka Topic
+    participant INDEXER as case-indexer
+    
+    Note over CLIENT: gRPC Request Types:<br/>Create, Update, CreateCell, IntegrationSync
+    
+    CLIENT->>FABRIC: gRPC Request<br/>(TLS, Port 8289)
+    FABRIC->>INTAKE: Route to case-intake
+    
+    Note over INTAKE: Rate Limiting Interceptor
+    INTAKE->>RATELIM: Check Rate Limit<br/>(source-based, 100ms timeout)
+    
+    alt Rate Limit OK
+        RATELIM->>INTAKE: Allow Request
+        Note over INTAKE: Request Validation
+        INTAKE->>INTAKE: Validate Protobuf<br/>Title/Description Length<br/>Attributes Structure
+        
+        alt Validation Passes
+            Note over INTAKE: Generate UUID if Create
+            INTAKE->>INTAKE: Generate Case UUID<br/>(if CreateRequest)
+            
+            Note over INTAKE: Kafka Publishing
+            INTAKE->>INTAKE: Encode Message<br/>[Version][Type][Protobuf]
+            INTAKE->>INTAKE: Compute Partition<br/>(UUID mod 32)
+            INTAKE->>KAFKA: Publish Message<br/>(Synchronous ACK)
+            KAFKA->>INTAKE: ACK Confirmation
+            
+            INTAKE->>CLIENT: Success Response<br/>InternalIntakeResponse{CaseId}
+            
+            Note over KAFKA: Asynchronous Processing
+            KAFKA->>INDEXER: Message Consumed<br/>(by case-indexer)
+        else Validation Fails
+            INTAKE->>CLIENT: Error: InvalidArgument<br/>(Validation Details)
+        end
+    else Rate Limited
+        RATELIM->>INTAKE: Reject Request
+        INTAKE->>CLIENT: Error: ResourceExhausted<br/>("Rate limit exceeded")
+    end
+    
+    alt Rate Limiter Error
+        RATELIM->>INTAKE: Error/Timeout
+        Note over INTAKE: Fail-open behavior
+        INTAKE->>INTAKE: Allow Request<br/>(Continue Processing)
+    end

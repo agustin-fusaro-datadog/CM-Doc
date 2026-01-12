@@ -1,0 +1,74 @@
+graph TB
+    subgraph "Data Sources"
+        API[Case Management APIs]
+        WEB[Web Interface]
+        INT[External Integrations<br/>Jira, ServiceNow]
+        MOBILE[Mobile Apps]
+    end
+    
+    subgraph "Kafka Infrastructure"
+        INTAKE_TOPIC[case-intake Topic<br/>32 Partitions]
+        CONSUMER_GROUP[case-indexer<br/>Consumer Group]
+    end
+    
+    subgraph "Case-Indexer Service"
+        INDEXER[Case-Indexer<br/>2 Replicas]
+        WORKER1[Worker Goroutine 1<br/>Partition 0-15]
+        WORKER2[Worker Goroutine 2<br/>Partition 16-31]
+        RETRIER[Retry Logic<br/>Exponential Backoff]
+    end
+    
+    subgraph "Backend Services (gRPC)"
+        CASE_API[Case API Service<br/>Handles ES Integration]
+        TIMELINE_API[Timeline API Service<br/>Handles ES Integration]
+    end
+    
+    subgraph "Data Layer"
+        POSTGRES[(PostgreSQL<br/>Primary Data Store)]
+        ELASTICSEARCH[(Elasticsearch<br/>Search Index)]
+    end
+    
+    subgraph "Monitoring & Observability"
+        DATADOG[Datadog Metrics]
+        LOGS[Structured Logs]
+        TRACES[Distributed Tracing]
+    end
+    
+    API --> INTAKE_TOPIC
+    WEB --> INTAKE_TOPIC
+    INT --> INTAKE_TOPIC
+    MOBILE --> INTAKE_TOPIC
+    
+    INTAKE_TOPIC --> CONSUMER_GROUP
+    CONSUMER_GROUP --> INDEXER
+    
+    INDEXER --> WORKER1
+    INDEXER --> WORKER2
+    WORKER1 --> RETRIER
+    WORKER2 --> RETRIER
+    
+    RETRIER --> CASE_API
+    RETRIER --> TIMELINE_API
+    
+    CASE_API --> POSTGRES
+    CASE_API --> ELASTICSEARCH
+    TIMELINE_API --> POSTGRES
+    TIMELINE_API --> ELASTICSEARCH
+    
+    INDEXER --> DATADOG
+    INDEXER --> LOGS
+    INDEXER --> TRACES
+    
+    classDef source fill:#e3f2fd
+    classDef kafka fill:#fff3e0
+    classDef indexer fill:#f3e5f5
+    classDef backend fill:#e8f5e8
+    classDef data fill:#f1f8e9
+    classDef monitoring fill:#fce4ec
+    
+    class API,WEB,INT,MOBILE source
+    class INTAKE_TOPIC,CONSUMER_GROUP kafka
+    class INDEXER,WORKER1,WORKER2,RETRIER indexer
+    class CASE_API,TIMELINE_API backend
+    class POSTGRES,ELASTICSEARCH data
+    class DATADOG,LOGS,TRACES monitoring
