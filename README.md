@@ -2,6 +2,10 @@
 
 Analyzes pull request activity for specified GitHub users within a configurable date range.
 
+**Available interfaces:**
+- 🌐 **Web UI** - User-friendly web interface with charts and visualizations
+- 💻 **Command Line** - Traditional CLI for automation and scripts
+
 ## Features
 
 - Fetch merged PRs for multiple users
@@ -10,28 +14,61 @@ Analyzes pull request activity for specified GitHub users within a configurable 
   - Total merged PRs per user
   - Average lines of code per PR
   - Total lines changed
-- Multiple output formats: table, JSON, CSV
-- Optional detailed PR listing
+- **Web UI:**
+  - Interactive form interface
+  - Real-time data fetching
+  - Visual charts with Chart.js
+  - Export to JSON/CSV
+- **CLI:**
+  - Multiple output formats: table, JSON, CSV
+  - Optional detailed PR listing
+  - Config file based
 
 ## Installation
-
-1. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Create configuration file:
+## Quick Start
+
+### Web UI (Recommended)
+
+1. Start the web server:
+
+```bash
+python3 app.py
+```
+
+2. Open your browser to: http://localhost:5000
+
+3. Fill in the form:
+   - Enter your GitHub personal access token
+   - Add GitHub usernames (one per line)
+   - Optionally set repository and date range
+   - Click "Analyze PRs"
+
+4. View results with interactive charts and export options
+
+### Command Line Interface
+
+1. Create configuration file:
 
 ```bash
 cp config.example.yaml config.yaml
 ```
 
-3. Edit `config.yaml` with your settings:
+2. Edit `config.yaml` with your settings:
    - Add your GitHub personal access token
    - List users to analyze
    - Set date range
    - Configure output preferences
+
+3. Run the analysis:
+
+```bash
+python3 pr_stats.py
+```
 
 ## Configuration
 
@@ -79,13 +116,27 @@ output:
 
 ## Usage
 
+### Web UI
+
+The web interface provides an intuitive form-based experience:
+
+1. **Configuration**: Enter credentials and parameters in the web form
+2. **Real-time Analysis**: See progress as data is fetched
+3. **Visual Results**: View statistics in tables and charts
+4. **Export**: Download results as JSON or CSV
+5. **Details**: Expand to see individual PR information
+
+No configuration file needed - everything is done through the browser!
+
+### CLI Usage
+
 Run the tool:
 
 ```bash
 python3 pr_stats.py
 ```
 
-### Example Output (Table Format)
+#### Example Output (Table Format)
 
 ```
 ✓ Configuration loaded successfully
@@ -150,6 +201,47 @@ The tool handles common errors gracefully:
 - Check that users have merged PRs in the specified date range
 - Verify repository name format: `owner/repo`
 - Ensure users have access to the repository
+
+## Project Structure
+
+```
+.
+├── app.py                  # Flask web application
+├── pr_stats.py            # CLI interface
+├── lib/                   # Core library modules
+│   ├── analyzer.py        # Main analysis orchestration
+│   ├── github_client.py   # GitHub API client
+│   └── statistics.py      # Statistics calculation
+├── templates/             # HTML templates
+│   └── index.html         # Web UI main page
+├── static/                # Static assets
+│   ├── css/
+│   │   └── style.css      # Web UI styles
+│   └── js/
+│       └── app.js         # Web UI JavaScript
+├── config.example.yaml    # Example configuration
+├── requirements.txt       # Python dependencies
+└── README.md             # This file
+```
+
+## Technology Stack
+
+- **Backend**: Python, Flask
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Visualization**: Chart.js
+- **API**: GitHub REST API v3
+- **Data Format**: YAML (config), JSON (API responses)
+
+## Development
+
+To run in development mode with auto-reload:
+
+```bash
+export FLASK_ENV=development
+python3 app.py
+```
+
+The web server will restart automatically when you make changes to the code.
 
 ## License
 

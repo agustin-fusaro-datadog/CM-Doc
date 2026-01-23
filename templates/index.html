@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub PR Statistics Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 GitHub PR Statistics Tool</h1>
+            <p>Analyze pull request activity for GitHub users</p>
+        </header>
+
+        <div id="config-section">
+            <form id="config-form">
+                <div class="form-group">
+                    <label for="token">
+                        GitHub Token <span class="required">*</span>
+                        <a href="https://github.com/settings/tokens" target="_blank" class="help-link">
+                            (generate token)
+                        </a>
+                    </label>
+                    <div class="password-field">
+                        <input type="password" id="token" name="token" required
+                               placeholder="ghp_your_token_here">
+                        <button type="button" id="toggle-token" class="toggle-btn">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="repository">
+                        Repository (optional)
+                    </label>
+                    <input type="text" id="repository" name="repository"
+                           placeholder="owner/repo (e.g., datadog/dd-source)">
+                    <small>Leave empty to search across all accessible repositories</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="users">
+                        GitHub Users <span class="required">*</span>
+                    </label>
+                    <textarea id="users" name="users" rows="4" required
+                              placeholder="Enter usernames (one per line)&#10;gondyb&#10;user2&#10;user3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" id="start_date" name="start_date">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" id="end_date" name="end_date">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="analyze-btn">
+                    Analyze PRs
+                </button>
+            </form>
+        </div>
+
+        <div id="loading-section" class="hidden">
+            <div class="loading-spinner"></div>
+            <p id="loading-message">Fetching PR data...</p>
+        </div>
+
+        <div id="error-section" class="hidden">
+            <div class="error-box">
+                <h3>❌ Error</h3>
+                <p id="error-message"></p>
+                <button class="btn-secondary" id="retry-btn">Try Again</button>
+            </div>
+        </div>
+
+        <div id="results-section" class="hidden">
+            <div class="results-header">
+                <h2>Results</h2>
+                <button class="btn-secondary" id="new-analysis-btn">New Analysis</button>
+            </div>
+
+            <div class="stats-summary">
+                <h3>Summary Statistics</h3>
+                <table id="stats-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Total PRs</th>
+                            <th>Avg Lines/PR</th>
+                            <th>Total Lines</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stats-tbody">
+                    </tbody>
+                    <tfoot id="stats-tfoot">
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <h3>Visual Comparison</h3>
+                <canvas id="pr-chart"></canvas>
+            </div>
+
+            <div class="pr-details">
+                <button class="btn-secondary" id="toggle-details-btn">Show Detailed PR List</button>
+                <div id="details-list" class="hidden"></div>
+            </div>
+
+            <div class="export-options">
+                <button class="btn-secondary" id="export-json-btn">Export JSON</button>
+                <button class="btn-secondary" id="export-csv-btn">Export CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
