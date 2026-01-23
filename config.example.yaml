@@ -1,0 +1,30 @@
+# GitHub PR Statistics Configuration
+# Copy this file to config.yaml and fill in your values
+
+github:
+  # GitHub personal access token with 'repo' scope
+  # Generate at: https://github.com/settings/tokens
+  token: "ghp_your_token_here"
+
+  # Repository to analyze (format: owner/repo)
+  # Leave empty to search across all accessible repos
+  repository: "datadog/dd-source"
+
+users:
+  # List of GitHub usernames to analyze
+  - "gondyb"
+  - "user2"
+  - "user3"
+
+date_range:
+  # Date range for PR analysis (YYYY-MM-DD format)
+  # Leave empty for "all time"
+  start: "2025-01-01"
+  end: "2026-01-23"
+
+output:
+  # Output format: table, json, csv
+  format: "table"
+
+  # Include individual PR details (not just summary)
+  show_details: false
