@@ -1,7 +1,35 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(bd prime:*)",
+      "Bash(bd hooks status:*)",
+      "Bash(bd hooks install:*)",
+      "Bash(bd ready:*)",
+      "Bash(bd create:*)",
+      "Bash(bd dep add CM Doc-zcn CM Doc-g6e)",
+      "Bash(bd dep add CM Doc-j98 CM Doc-zcn)",
+      "Bash(bd dep add CM Doc-5cx CM Doc-j98)",
+      "Bash(bd dep add CM Doc-9e0 CM Doc-5cx)",
+      "Bash(bd dep add:*)",
+      "Bash(bd update:*)",
+      "Bash(bd show:*)",
+      "Bash(bd close:*)",
+      "Bash(python3:*)",
+      "Bash(chmod:*)",
+      "Bash(bd list:*)",
+      "Bash(git add:*)",
+      "Bash(bd sync:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(bd stats:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(yarn typecheck:*)",
+      "Bash(yarn workspace:*)",
+      "Bash(npx tsc:*)",
+      "Bash(yarn --help:*)"
     ]
   }
 }

@@ -1,0 +1,17 @@
+# GitHub PR Statistics Configuration
+
+github:
+  token: "test_token_placeholder"
+  repository: "datadog/dd-source"
+
+users:
+  - "gondyb"
+  - "user2"
+
+date_range:
+  start: "2025-01-01"
+  end: "2026-01-23"
+
+output:
+  format: "table"
+  show_details: false
